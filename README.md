@@ -1,6 +1,6 @@
 # Intro
 
-Pomodoro focus timer, with golang in the backend and JS in the frontend.
+Pomodoro focus timer, with golang in the backend and Svelte in the frontend.
 
 ## TODO
 
