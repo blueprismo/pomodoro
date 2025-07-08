@@ -13,16 +13,18 @@
 		return `${m}:${s}`;
 	}
 
-	function start() {
-		if (isRunning) return;
-		isRunning = true;
-		timer = setInterval(() => {
-			if (secondsLeft > 0) {
-				secondsLeft--;
-			} else {
-				stop();
-			}
-		}, 1000);
+	async function start() {
+		try {
+  		  const response = await fetch('/start');
+  		  if (!response.ok) {
+  		    throw new Error(`Response status: ${response.status}`);
+  		  }
+		  console.log("/start hit")
+  		  const json = await response.json();
+  		  console.log(json);
+  		} catch (error) {
+  		  console.error(error.message);
+		}
 	}
 
 	function stop() {

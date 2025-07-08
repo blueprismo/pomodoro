@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	//"fmt"
 )
 
 func TestStartHandler(t *testing.T) {
-  ps := NewPomodoro(FiveSecondsDuration)
+  ps := NewPomodoro()
+  ps.durations.Work = FiveSecondsDuration
   server := &PomodoroServer{Pomodoro: ps}
-	expected := `{"running":true}`
+  expected := `{"running":true}`
 
   req := httptest.NewRequest(http.MethodGet, "/start", nil)
   w := httptest.NewRecorder()
@@ -28,7 +28,8 @@ func TestStartHandler(t *testing.T) {
 }
 
 func TestPauseHandler(t *testing.T) {
-	ps := NewPomodoro(FiveSecondsDuration)
+	ps := NewPomodoro()
+	ps.durations.Work = FiveSecondsDuration
 	server := &PomodoroServer{Pomodoro: ps}
 	
 	req := httptest.NewRequest(http.MethodGet, "/pause", nil)

@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"time"
 )
 
 func main() {
@@ -13,7 +12,7 @@ func main() {
 	mux.HandleFunc("/", MainHandler)
 
 	// API
-	ps := NewPomodoro(25 * time.Minute)
+	ps := NewPomodoro()
 	server := &PomodoroServer{Pomodoro: ps}
 	mux.HandleFunc("/start", server.StartHandler)
 	mux.HandleFunc("/pause", server.PauseHandler)

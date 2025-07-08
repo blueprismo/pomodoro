@@ -106,3 +106,8 @@ func (s *PomodoroServer) PauseHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonMsg)
 }
+
+// func (s *PomodoroServer) StatusHandler(w http.ResponseWriter, r *http.Request) {
+// 	// returns the actual status of our Pomodoro Timer
+// 	response := PomodoroState{"": true}
+// }
