@@ -9,18 +9,18 @@ func TestInitTimer(t *testing.T) {
 	var desiredInitState string = "work"
 
 	pt := NewPomodoro()
-	pt.durations.Work = SixtyMinutesDuration
+	pt.Durations.Work = SixtyMinutesDuration
 
-	if pt.mode != desiredInitState {
-		t.Errorf("Initmode NOT ok, got %v want %v", pt.mode, desiredInitState)
+	if pt.Mode != desiredInitState {
+		t.Errorf("InitMode NOT ok, got %v want %v", pt.Mode, desiredInitState)
 	}
 
-	if pt.remaining >= ThreeHourDuration {
-		t.Errorf("Error, init working time too long: got %v want less than %v", pt.remaining, ThreeHourDuration)
+	if pt.Remaining >= ThreeHourDuration {
+		t.Errorf("Error, init working time too long: got %v want less than %v", pt.Remaining, ThreeHourDuration)
 	}
 
-	if pt.cycleCount != 0 {
-		t.Errorf("Error, Cycle count should be 0, got %v", pt.cycleCount)
+	if pt.CycleCount != 0 {
+		t.Errorf("Error, Cycle count should be 0, got %v", pt.CycleCount)
 	}
 }
 
@@ -40,9 +40,9 @@ func TestWorkCountdown(t *testing.T) {
 func TestPauseTimer(t *testing.T) {
 	// create a new pomodoro
 	pt := NewPomodoro()
-	pt.durations.Work = 100 * time.Millisecond
-	pt.durations.ShortBreak = 20 * time.Millisecond
-	pt.durations.LongBreak = 40 * time.Millisecond
+	pt.Durations.Work = 100 * time.Millisecond
+	pt.Durations.ShortBreak = 20 * time.Millisecond
+	pt.Durations.LongBreak = 40 * time.Millisecond
 
 	// Test that the timer can be paused
 	pt.startTimer()
@@ -50,26 +50,26 @@ func TestPauseTimer(t *testing.T) {
 	pt.pauseTimer()
 
 	// Check resulting state
-	if pt.isRunning {
+	if pt.IsRunning {
 		t.Errorf("ERROR: Timer is running")
 	}
 	// We slept 10 out of 100 Milliseconds, so we should be around 90 Milliseconds, give 5ms buffer
-	if pt.remaining > 100 *time.Millisecond || pt.remaining < 85 *time.Millisecond {
-		t.Errorf("Expected remaining time between 100ms and 85ms, got %v", pt.remaining)
+	if pt.Remaining > 100 *time.Millisecond || pt.Remaining < 85 *time.Millisecond {
+		t.Errorf("Expected Remaining time between 100ms and 85ms, got %v", pt.Remaining)
 	}
 }
 
 func TestResumeTimer(t *testing.T) {
 	pt := NewPomodoro()
-	pt.durations.Work = 100 * time.Millisecond
-	pt.durations.ShortBreak = 20 * time.Millisecond
-	pt.durations.LongBreak = 40 * time.Millisecond
+	pt.Durations.Work = 100 * time.Millisecond
+	pt.Durations.ShortBreak = 20 * time.Millisecond
+	pt.Durations.LongBreak = 40 * time.Millisecond
 
 	pt.startTimer()
 	time.Sleep(10 * time.Millisecond)
 	pt.pauseTimer()
 
-	remaining := pt.remaining
+	remaining := pt.Remaining
 
 	if remaining > 100 * time.Millisecond || remaining < 85*time.Millisecond {
 		t.Errorf("Unexpected remaining time after pause: got %v", remaining)
@@ -84,7 +84,7 @@ func TestResumeTimer(t *testing.T) {
 		t.Error("Timer did not expire after resume in expected time")
 	}
 
-	if !pt.isRunning {
+	if !pt.IsRunning {
 		t.Error("Timer should be running after resume")
 	}
 }
@@ -99,7 +99,7 @@ func assertTransitionState(t *testing.T, currentCicle, desiredCicle int, current
 	}
 }
 
-func expectTransition(t *testing.T, pt *PomodoroState, expectedCycle int, expectedmode string) {
+func expectTransition(t *testing.T, pt *PomodoroTimer, expectedCycle int, expectedmode string) {
 	// function to check transitioning state
 	select {
 	case <-pt.timer.C:
@@ -108,7 +108,7 @@ func expectTransition(t *testing.T, pt *PomodoroState, expectedCycle int, expect
 	case <-time.After(1 * time.Second):
 		t.Fatalf("Timer did not expire in expected time for mode %s", expectedmode)
 	}
-	assertTransitionState(t, pt.cycleCount, expectedCycle, pt.mode, expectedmode)
+	assertTransitionState(t, pt.CycleCount, expectedCycle, pt.Mode, expectedmode)
 }
 
 func TestTransitionState(t *testing.T) {
@@ -116,9 +116,9 @@ func TestTransitionState(t *testing.T) {
 	// Work -> ShortBreak -> Work -> ShortBreak -> Work -> ShortBreak -> Work -> LongBreak -> reset
 	// BEGIN -> Work -[1 tr]-> ShortBreak -[2 tr]> Work -[3tr]-> ShortBreak -[4tr]-> Work -[5tr]-> ShortBreak -[6tr]-> Work -[7tr]-> LongBreak -[8tr]-> BEGIN
 	pt := NewPomodoro()
-	pt.durations.Work = 20 * time.Millisecond
-	pt.durations.ShortBreak = 5 * time.Millisecond
-	pt.durations.LongBreak = 15 * time.Millisecond
+	pt.Durations.Work = 20 * time.Millisecond
+	pt.Durations.ShortBreak = 5 * time.Millisecond
+	pt.Durations.LongBreak = 15 * time.Millisecond
 
 	// start pomodoro and evaluate first transition (work -> shortBreak)
 	pt.startTimer()
@@ -133,4 +133,34 @@ func TestTransitionState(t *testing.T) {
 	expectTransition(t, pt, 0, "work") // reset to BEGIN -> work
 }
 
+func TestPomodoroStatus(t *testing.T) {
+	pt := NewPomodoro(PomodoroDurations{
+		50 * time.Millisecond,
+		10 * time.Millisecond,
+		20 * time.Millisecond,
+	})
+
+	pt.startTimer()
+	expectTransition(t, pt, 1, "shortBreak")
+	expectTransition(t, pt, 1, "work")
+
+	status := pt.getCurrentStatus()
+
+	if status.CycleCount != 1 {
+		t.Errorf("Undesired cycle count, want %v, got %v", 1, status.CycleCount)
+	}
+	if status.timer != nil {
+		t.Errorf("Unexported timer has been exported! Security flaw")
+	}
+	if status.IsRunning != true {
+		t.Errorf("Timer has not been stopped!")
+	}
+
+	pt.pauseTimer()
+	status = pt.getCurrentStatus()
+
+	if status.IsRunning != false {
+		t.Errorf("Timer should be stopped!")
+	}
+}
 

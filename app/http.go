@@ -11,7 +11,7 @@ import (
 )
 
 type PomodoroServer struct {
-	Pomodoro *PomodoroState
+	Pomodoro *PomodoroTimer
 }
 
 //go:embed frontend/dist/*
@@ -43,7 +43,7 @@ func init() {
 func MainHandler(w http.ResponseWriter, r *http.Request) {
 	// Main landing page
 	w.Header().Set("Content-Type", "text/html")
-	config := map[string]int{"work": 25, "shortBreak": 5, "longBreak": 15}
+	config := map[string]int{"work": 5, "shortBreak": 5, "longBreak": 15}
 	jsonBytes, _ := json.Marshal(config)
 
 	// Read embedded index.html
@@ -67,7 +67,7 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 // Pomodoro Handlers
 func (s *PomodoroServer) StartHandler(w http.ResponseWriter, r *http.Request) {
 	// This will start the handler and return OK on succesful response or err
-	if !s.Pomodoro.isRunning {
+	if !s.Pomodoro.IsRunning {
 		s.Pomodoro.startTimer()
 		log.Print("STARTED POMODORO")
 	} else {
@@ -87,7 +87,7 @@ func (s *PomodoroServer) StartHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *PomodoroServer) PauseHandler(w http.ResponseWriter, r *http.Request) {
 	// This will pause the Pomodoro
-	if s.Pomodoro.isRunning {
+	if s.Pomodoro.IsRunning {
 		s.Pomodoro.pauseTimer()
 		log.Print("Pomodoro paused")
 	} else {
@@ -107,7 +107,15 @@ func (s *PomodoroServer) PauseHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonMsg)
 }
 
-// func (s *PomodoroServer) StatusHandler(w http.ResponseWriter, r *http.Request) {
-// 	// returns the actual status of our Pomodoro Timer
-// 	response := PomodoroState{"": true}
-// }
+func (s *PomodoroServer) StatusHandler(w http.ResponseWriter, r *http.Request) {
+	// returns status of a Pomodoro Timer
+	jsonMsg, err := json.Marshal(s.Pomodoro.getCurrentStatus())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonMsg)
+}
