@@ -74,7 +74,29 @@
 		}
 	}
 
-	function nextMode() {
+	function nextMode(desiredMode) {
+		if (desiredMode != undefined) {
+			switch (desiredMode) {
+				case "work":
+					clearInterval(timer);
+					secondsLeft = work;
+					isRunning = false;
+					break;
+				case "shortBreak":
+					clearInterval(timer);
+					secondsLeft = shortBreak;
+					isRunning = false;
+					break;
+				case "longBreak":
+					clearInterval(timer);
+					secondsLeft = longBreak;
+					isRunning = false;
+					break;
+			}
+			mode = desiredMode;
+			return mode;
+		}
+
 		console.log(`Current mode before change: ${mode}`);
 		switch (mode) {
 			case "work":
@@ -119,31 +141,35 @@
 
 <main class={mode}>
 	<div id="timerContainer">
+		<div class="buttonsHeader buttons">
+			<button class:selected={mode === "work"} on:click={() => nextMode("work")}>Work</button>
+			<button class:selected={mode === "shortBreak"} on:click={() => nextMode("shortBreak")}>Short Break</button>
+			<button class:selected={mode === "longBreak"}  on:click={() => nextMode("longBreak")}>Long Break</button>
+		</div>
 		<h1>{format(secondsLeft)}</h1>
 		<p>{mode}</p>
 
 		<div class="buttons">
 			<button
-				class={mode}
+				class="startStop"
 				class:is-start={!isRunning}
 				class:is-pause={isRunning}
 				on:click={startstop}
 			>
 				{isRunning ? "Pause" : "Start"}
 			</button>
-			<!-- <button on:click={pause}>Pause</button> -->
-			<!-- <button on:click={() => switchMode("Work")}>Work</button>
-			<button on:click={() => switchMode("Short Break")}>Short Break</button>
-			<button on:click={() => switchMode("Long Break")}>Long Break</button> -->
 		</div>
 	</div>
 </main>
 
 <style>
+	/* fonts */
+	@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+
 	/* basics */
 	main {
 		text-align: center;
-		font-family: sans-serif;
+		font-family: "Rubik", "Roboto Mono", "Sans Serif";
 		padding: 2rem;
 		height: 100vh;
 		color: white;
@@ -164,12 +190,11 @@
 		flex-direction: column;
 		flex-wrap: nowrap;
 		width: 50%;
-    	margin: auto;
+		margin: auto;
 		background-color: rgba(255, 255, 255, 0.4);
-		border-radius: 0.5em;
-    	padding: 1em;
+		border-radius: 12px;
+		padding: 1em;
 	}
-
 
 	.buttons button {
 		margin: 0.5rem;
@@ -178,24 +203,22 @@
 		cursor: pointer;
 	}
 
-	.is-start {
-		/*color: white;*/
-		font-size: 1.5rem;
-		font-weight: bold;
-		text-transform: uppercase;
+	.buttonsHeader button {
 		border: none;
 		border-radius: 12px;
-		padding: 1rem 2.5rem;
-		box-shadow: 0px 4px 0px rgb(224, 224, 224);
-		transition:
-			transform 0.1s ease,
-			box-shadow 0.1s ease;
-	}
-	.is-start:active {
-		transform: translateY(2px);
-		box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.2);
+		color: white;
+		background-color: transparent;
 	}
 
+	.buttonsHeader > button.selected {
+		background-color: rgba(0, 0, 0, 0.1);
+	}
+
+	.startStop {
+		background-color: white;
+	}
+
+	.is-start,
 	.is-pause {
 		font-size: 1.5rem;
 		font-weight: bold;
@@ -204,29 +227,32 @@
 		border-radius: 12px;
 		padding: 1rem 2.5rem;
 	}
-	
+	.is-start {
+		box-shadow: 0px 4px 0px rgb(224, 224, 224);
+		transition: transform 0.1s ease, box-shadow 0.1s ease;
+	}
+	.is-start:active {
+		transform: translateY(2px);
+		box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.2);
+	}
+
 	.work {
 		background-color: tomato;
 	}
-
-	.work button {
-		background-color: white;
+	.work .startStop {
 		color: tomato;
 	}
 
 	.shortBreak {
 		background-color: rgb(56, 133, 138);
 	}
-	.shortBreak button {
-		background-color: white;
+	.shortBreak .startStop {
 		color: rgb(56, 133, 138);
 	}
-
 	.longBreak {
 		background-color: rgb(57, 112, 151);
 	}
-	.longBreak button {
-		background-color: white;
+	.longBreak .startStop {
 		color: rgb(57, 112, 151);
 	}
 </style>
