@@ -79,17 +79,17 @@
 			switch (desiredMode) {
 				case "work":
 					clearInterval(timer);
-					secondsLeft = work;
+					secondsLeft = work * 60;
 					isRunning = false;
 					break;
 				case "shortBreak":
 					clearInterval(timer);
-					secondsLeft = shortBreak;
+					secondsLeft = shortBreak * 60;
 					isRunning = false;
 					break;
 				case "longBreak":
 					clearInterval(timer);
-					secondsLeft = longBreak;
+					secondsLeft = longBreak * 60;
 					isRunning = false;
 					break;
 			}
@@ -104,7 +104,7 @@
 					cycleCount++;
 					clearInterval(timer);
 					nextstate = "shortBreak";
-					secondsLeft = shortBreak;
+					secondsLeft = shortBreak * 60;
 				} else {
 					cycleCount++;
 					clearInterval(timer);

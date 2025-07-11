@@ -43,7 +43,7 @@ func init() {
 func MainHandler(w http.ResponseWriter, r *http.Request) {
 	// Main landing page
 	w.Header().Set("Content-Type", "text/html")
-	config := map[string]int{"work": 5, "shortBreak": 5, "longBreak": 15}
+	config := map[string]int{"work": 25, "shortBreak": 5, "longBreak": 15}
 	jsonBytes, _ := json.Marshal(config)
 
 	// Read embedded index.html
