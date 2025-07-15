@@ -37,11 +37,11 @@ jobs:
       - name: 👀 Debug run values
         id: meta
         run: |
-          echo "Go version:"
-          echo "golang_version=$(go version | awk '{ sub(/^go/, \"\", $3); print $3 }')" >> "$GITHUB_OUTPUT"
-          echo "git commit:"
-          echo "short_sha=$(git rev-parse --short '$GITHUB_SHA')" >> "$GITHUB_OUTPUT"
-
+          golang_version=$(go version | awk '{ sub(/^go/, "", $3); print $3 }')
+          echo "golang_version=$golang_version" >> "$GITHUB_OUTPUT"
+          short_sha=$(git rev-parse --short "$GITHUB_SHA")
+          echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
+      
       - name: 🧪 Test
         run: go test -v .
       
