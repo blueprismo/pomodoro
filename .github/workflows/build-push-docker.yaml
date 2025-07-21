@@ -78,6 +78,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: ${{ github.event_name != 'pull_request' }}
+          platforms: | 
+            linux/amd64
+            linux/arm64
           tags: |
             "${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_NAME }}:latest"
             "${{ env.DOCKERHUB_USERNAME }}/${{ env.REPO_NAME }}:${{ needs.test.outputs.short_sha }}"
