@@ -20,9 +20,10 @@
 	let nextstate, timer;
 	let cycleCount = 0;
 	let mode = "work"; // "work", "shortBreak", "longBreak"
-	let secondsLeft = work; //%2;
+	let secondsLeft = work * 60; //%2;
 
 	function format(t) {
+		// transform the remaining seconds into a human readable format of "mm:ss"
 		const m = Math.floor(t / 60)
 			.toString()
 			.padStart(2, "0");
@@ -75,7 +76,14 @@
 	}
 
 	function nextMode(desiredMode) {
-		if (desiredMode != undefined) {
+		// This function will transition into the desired mode provided by it's argument
+		// When no arguments are provided, it will transition into the next state [work, shortBreak, Longbreak]
+		// When we jump into a desired state, the cycleCount is not altered!
+		if (
+			desiredMode == "work" ||
+			desiredMode == "shortBreak" ||
+			desiredMode == "longBreak"
+		) {
 			switch (desiredMode) {
 				case "work":
 					clearInterval(timer);
@@ -95,56 +103,69 @@
 			}
 			mode = desiredMode;
 			return mode;
-		}
+		} else {
+			// jump into the next unspecified state
+			switch (mode) {
+				case "work":
+					if (cycleCount < 3) {
+						cycleCount++;
+						clearInterval(timer);
+						nextstate = "shortBreak";
+						secondsLeft = shortBreak * 60;
+					} else {
+						cycleCount++;
+						clearInterval(timer);
+						nextstate = "longBreak";
+						secondsLeft = longBreak * 60;
+					}
+					isRunning = false;
+					break;
 
-		console.log(`Current mode before change: ${mode}`);
-		switch (mode) {
-			case "work":
-				if (cycleCount < 3) {
-					cycleCount++;
+				case "shortBreak":
 					clearInterval(timer);
-					nextstate = "shortBreak";
-					secondsLeft = shortBreak * 60;
-				} else {
-					cycleCount++;
+					nextstate = "work";
+					secondsLeft = work * 60;
+					isRunning = false;
+					break;
+
+				case "longBreak":
 					clearInterval(timer);
-					nextstate = "longBreak";
-					secondsLeft = longBreak * 60;
-				}
-				isRunning = false;
-				break;
+					cycleCount = 0;
+					nextstate = "work";
+					secondsLeft = work * 60;
+					isRunning = false;
+					break;
 
-			case "shortBreak":
-				clearInterval(timer);
-				nextstate = "work";
-				secondsLeft = work * 60;
-				isRunning = false;
-				break;
-
-			case "longBreak":
-				clearInterval(timer);
-				cycleCount = 0;
-				nextstate = "work";
-				secondsLeft = work * 60;
-				isRunning = false;
-				break;
-
-			default:
-				console.log(`Error, undefined state ${mode}`);
-				break;
+				default:
+					console.log(`Error, undefined state ${mode}`);
+					break;
+			}
+			mode = nextstate;
+			return mode;
 		}
+	}
 
-		console.log(`Current mode after change: ${nextstate}`);
-		return (mode = nextstate);
+	function play() {
+		var audio = document.getElementById("audio-button");
+		audio.play();
 	}
 </script>
 
 <main class={mode}>
 	<div id="timerContainer">
 		<div class="buttonsHeader buttons">
-			<button class:selected={mode === "work"} on:click={() => nextMode("work")}>Work</button>
-			<button class:selected={mode === "shortBreak"} on:click={() => nextMode("shortBreak")}>Short Break</button>
-			<button class:selected={mode === "longBreak"}  on:click={() => nextMode("longBreak")}>Long Break</button>
+			<button
+				class:selected={mode === "work"}
+				on:click={() => nextMode("work")}>Work</button
+			>
+			<button
+				class:selected={mode === "shortBreak"}
+				on:click={() => nextMode("shortBreak")}>Short Break</button
+			>
+			<button
+				class:selected={mode === "longBreak"}
+				on:click={() => nextMode("longBreak")}>Long Break</button
+			>
 		</div>
 		<h1>{format(secondsLeft)}</h1>
 		<p>{mode}</p>
@@ -155,9 +176,20 @@
 				class:is-start={!isRunning}
 				class:is-pause={isRunning}
 				on:click={startstop}
+				on:click={play}
 			>
 				{isRunning ? "Pause" : "Start"}
 			</button>
+
+			<button
+				class="startStop nextState"
+				class:is-pause={isRunning}
+				style="display:{isRunning ? 'inline' : 'none'}"
+				on:click={() => {nextMode();}}
+			>
+				⏭️
+			</button>
+			<audio id="audio-button" src="/assets/click-sound.mp3"></audio>
 		</div>
 	</div>
 </main>
@@ -184,6 +216,7 @@
 		font-size: 1.5rem;
 		margin-bottom: 2rem;
 	}
+
 	/* Timer style*/
 	#timerContainer {
 		display: flex;
@@ -217,6 +250,9 @@
 	.startStop {
 		background-color: white;
 	}
+	.nextState {
+		background-color: transparent; /*rgba(255, 255, 255, 0.4);*/
+	}
 
 	.is-start,
 	.is-pause {
@@ -229,7 +265,9 @@
 	}
 	.is-start {
 		box-shadow: 0px 4px 0px rgb(224, 224, 224);
-		transition: transform 0.1s ease, box-shadow 0.1s ease;
+		transition:
+			transform 0.1s ease,
+			box-shadow 0.1s ease;
 	}
 	.is-start:active {
 		transform: translateY(2px);
